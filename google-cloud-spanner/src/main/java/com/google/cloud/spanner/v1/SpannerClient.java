@@ -807,6 +807,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setAutocommit(true)
    *           .build();
    *   ResultSet response = spannerClient.executeSql(request);
    * }
@@ -849,6 +850,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setAutocommit(true)
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.executeSqlCallable().futureCall(request);
    *   // Do something.
@@ -884,6 +886,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setAutocommit(true)
    *           .build();
    *   ServerStream<PartialResultSet> stream =
    *       spannerClient.executeStreamingSqlCallable().call(request);
