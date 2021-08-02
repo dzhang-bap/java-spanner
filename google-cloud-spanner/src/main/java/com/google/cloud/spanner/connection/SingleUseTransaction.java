@@ -26,6 +26,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
@@ -332,10 +333,20 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     }
   }
 
-  private TransactionRunner createWriteTransaction() {
-    return returnCommitStats
-        ? dbClient.readWriteTransaction(Options.commitStats())
-        : dbClient.readWriteTransaction();
+  private TransactionRunner createWriteTransaction(boolean inlineCommit) {
+    if (!returnCommitStats && !inlineCommit) {
+      return dbClient.readWriteTransaction();
+    }
+    final int num_options = (returnCommitStats && inlineCommit) ? 2 : 1;
+    TransactionOption[] options = new TransactionOption[num_options];
+    int i = 0;
+    if (returnCommitStats) {
+      options[i++] = Options.commitStats();
+    }
+    if (inlineCommit) {
+      options[i] = Options.inlineCommitOption();
+    }
+    return dbClient.readWriteTransaction(options);
   }
 
   private ApiFuture<Long> executeTransactionalUpdateAsync(
@@ -343,7 +354,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     Callable<Long> callable =
         () -> {
           try {
-            writeTransaction = createWriteTransaction();
+            writeTransaction = createWriteTransaction(true);
             Long res =
                 writeTransaction.run(
                     transaction -> transaction.executeUpdate(update.getStatement(), options));
@@ -380,7 +391,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       final Iterable<ParsedStatement> updates, final UpdateOption... options) {
     Callable<long[]> callable =
         () -> {
-          writeTransaction = createWriteTransaction();
+          writeTransaction = createWriteTransaction(false);
           return writeTransaction.run(
               transaction -> {
                 try {
@@ -417,7 +428,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     Callable<Void> callable =
         () -> {
           try {
-            writeTransaction = createWriteTransaction();
+            writeTransaction = createWriteTransaction(false);
             Void res =
                 writeTransaction.run(
                     transaction -> {
