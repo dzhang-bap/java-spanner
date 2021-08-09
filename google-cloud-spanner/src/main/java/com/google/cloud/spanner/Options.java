@@ -420,7 +420,7 @@ public final class Options implements Serializable {
       result = 31 * result + tag.hashCode();
     }
     if (inlineCommit) {
-      result = 31 * result + 1231;
+      result = 31 * result + 17;
     }
     return result;
   }
